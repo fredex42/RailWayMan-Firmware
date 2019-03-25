@@ -7,6 +7,7 @@ int main(void)
   static char initial_buffer[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x00};
   char buffer[8];
   int8_t received_bytes;
+  int rv;
 
   setup_twi(0x04);
   sei();
@@ -15,13 +16,22 @@ int main(void)
   while(1){
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
+    PORTD|=0x01;
     if(twi_flags&TWI_RX_COMPLETE){
       received_bytes = get_rx_buffer(buffer, 8);
       if(received_bytes>0){
-        set_tx_buffer(buffer, received_bytes);
+        rv=set_tx_buffer(buffer, received_bytes);
       } else {
-        set_tx_buffer(&received_bytes, 1);
+        rv=set_tx_buffer(&received_bytes, 1);
+      }
+      if(rv<0){
+        PORTD=rv;
+        break;
       }
     }
   }
+
+  cli();
+  set_sleep_mode(SLEEP_MODE_IDLE);
+  sleep_mode();
 }

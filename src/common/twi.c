@@ -4,7 +4,6 @@
 #define F_CPU 2000000UL
 #include <util/delay.h>
 
-#define I2CADDRESS 0x03
 #include "twi.h"
 
 char tx_buffer[TWI_BUFFER_SIZE];
@@ -145,7 +144,7 @@ ISR(TWI_vect){
       twi_flags|=TWI_TX_BUSY;
       tx_buffer_ptr=0;
       TWDR = tx_buffer[0];
-      TWCR = TWCR | (1 << TWINT) | (0 << TWEA);  //this is the last data byte so TWEA should be 0
+      TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
       break;
     case 0xB0:  //arbitration lost, then addressed for read. Not needed since we only operate as slave
       #ifdef DEBUG
@@ -159,9 +158,10 @@ ISR(TWI_vect){
       ++tx_buffer_ptr;
       if(tx_buffer_ptr<tx_buffer_len && tx_buffer_ptr<TWI_BUFFER_SIZE){
         TWDR = tx_buffer[tx_buffer_ptr];
-        TWCR = TWCR | (1<<TWINT) | (1<<TWEA);
+        TWCR |= (1<<TWINT) | (1<<TWEA);
       } else {
-        TWCR = TWCR | (1<<TWINT) & ~(1<<TWEA);
+        TWCR |= (1<<TWINT);
+        TWCR &= ~(1<<TWEA);
       }
       break;
     case 0xC0:  //data byte transmitted, NOT ACK received, stop
@@ -192,6 +192,9 @@ void setup_twi(int8_t myaddress){
   //see p. 223 of datasheet
   //set up own address, and respond to global as well
   int8_t respondglobal = 0x00;
+
+  memset(tx_buffer,0,TWI_BUFFER_SIZE);
+  memset(rx_buffer,0, TWI_BUFFER_SIZE);
 
   TWAR = (myaddress << 1) | (respondglobal && 0x01);
 
