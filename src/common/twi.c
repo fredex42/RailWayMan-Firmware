@@ -31,6 +31,7 @@ int set_tx_buffer(char* data, int8_t len)
   if(len>TWI_BUFFER_SIZE) return -E_RANGE;
 
   memcpy(tx_buffer, data, len);
+  tx_buffer_len = len;
   twi_flags&= (~TWI_TX_ABORTED)&(~TWI_TX_COMPLETE); //new transfer ready, remove completed twi_flags
   return E_OK;
 }
@@ -57,6 +58,13 @@ int get_rx_buffer(char *data, int8_t max_len)
   if(max_len>rx_buffer_len) return -E_RANGE;
 
   memcpy(data, rx_buffer, rx_buffer_len);
+  return rx_buffer_len;
+}
+
+int8_t get_rx_buffer_len()
+{
+  if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
+  if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
   return rx_buffer_len;
 }
 
