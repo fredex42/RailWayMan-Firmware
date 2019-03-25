@@ -5,6 +5,25 @@ extern int8_t twi_data_byte;
 //public functions from twi.c
 void setup_twi(int8_t myaddress);
 
+/**
+read a single byte from the receive buffer
+*/
+char peek_rx_buffer(int8_t idx);
+/**
+read the receive buffer by copying its data to the provided pointer
+*/
+int get_rx_buffer(char *data, int8_t max_len);
+/**
+push a single byte onto the TX buffer
+*/
+int push_tx_buffer(char data);
+/**
+set the transmit buffer data by copying in the provided buffer.
+*/
+int set_tx_buffer(char* data, int8_t len);
+
+extern int8_t twi_flags;
+
 #define TWI_BUFFER_SIZE 8
 
 //flags
@@ -18,5 +37,7 @@ void setup_twi(int8_t myaddress);
 #define TWI_TX_BUSY     0xF0
 
 //return codes
-#define  E_OK 0
-#define  E_BUSY 1 //busy, or buffer occupied
+#define  E_OK           0
+#define  E_BUSY         1 //busy, or buffer occupied
+#define  E_RANGE        2 //trying to put or get more data than the buffer can take
+#define  E_NOTREADY     3 //trying to read before transfer has been made
