@@ -7,11 +7,11 @@
 #include "twi.h"
 
 char tx_buffer[TWI_BUFFER_SIZE];
-int8_t tx_buffer_ptr;
-int8_t tx_buffer_len;
+int8_t tx_buffer_ptr=0;
+int8_t tx_buffer_len=0;
 char rx_buffer[TWI_BUFFER_SIZE];
-int8_t rx_buffer_ptr;
-int8_t rx_buffer_len;
+int8_t rx_buffer_ptr=0;
+int8_t rx_buffer_len=0;
 int8_t twi_flags;
 
 /**
@@ -87,6 +87,7 @@ ISR(TWI_vect){
       #endif
       TWCR = TWCR | (1<<TWINT) | (1 << TWEA); //set TWEA bit to ACK incoming byte
       rx_buffer_ptr=0;
+      rx_buffer_len=0;
       twi_flags|=TWI_RX_BUSY;
       break;
     case 0x68:  //arbitration lost, own address received
@@ -106,31 +107,40 @@ ISR(TWI_vect){
       #endif
       break;
     case 0x80:  //own call address received, data ready, ACKED
-      if(rx_buffer_ptr<rx_buffer_len && rx_buffer_ptr<TWI_BUFFER_SIZE){
-        rx_buffer[rx_buffer_ptr] = TWDR;  //receive data register into the is_running flag
-        TWCR = TWCR | (1<<TWINT) | (1<<TWEA); //set TWEA bit to ACK the incoming byte
+      #ifdef DEBUG
+      PORTD=0x05;
+      #endif
+      if(rx_buffer_ptr<TWI_BUFFER_SIZE){
+        rx_buffer[rx_buffer_ptr] = TWDR;
+        ++rx_buffer_ptr;
+        ++rx_buffer_len;
+        TWCR |= (1<<TWINT) | (1<<TWEA); //set TWEA bit to ACK the incoming byte
       } else {
-        TWCR = TWCR | (1<<TWINT) & ~(1<<TWEA); //clear TWEA bit to NACK the incoming byte, we ran out of space
+        TWCR |=  (1<<TWINT);
+        TWCR &= ~(1<<TWEA); //clear TWEA bit to NACK the incoming byte, we ran out of space
       }
       break;
     case 0x88:  //own call address received, data ready, NACKED
       #ifdef DEBUG
-      PORTD=0x05;
+      PORTD=0x06;
       #endif
+      TWCR = TWCR | (1<<TWINT) | (1<<TWEA);   //switch to not addressed listening
       break;
     case 0x90:  //general call address received, data ready, ACKED
       #ifdef DEBUG
-      PORTD=0x06;
+      PORTD=0x07;
       #endif
+      TWCR = TWCR | (1<<TWINT) | (1<<TWEA);
       break;
     case 0x98:  //general call address received, data ready, NACKED
       #ifdef DEBUG
-      PORTD=0x07;
+      PORTD=0x08;
       #endif
+      TWCR = TWCR | (1<<TWINT) | (1<<TWEA);
       break;
     case 0xA0:  //STOP condition or repeated START condition received
       #ifdef DEBUG
-      PORTD=0x08;
+      PORTD=0x09;
       #endif
       twi_flags&=~TWI_RX_BUSY;  //clear the busy flag.
       TWCR = TWCR | (1<<TWINT) | (1<< TWEA); //set the TWEA bit, clear STA and STO to switch to not-addressed-listening
@@ -139,7 +149,7 @@ ISR(TWI_vect){
     //slave transmitter codes
     case 0xA8:  //own address has been received, ACK returned, need data byte.
       #ifdef DEBUG
-      PORTD=0x09;
+      PORTD=0x0A;
       #endif
       twi_flags|=TWI_TX_BUSY;
       tx_buffer_ptr=0;
@@ -148,12 +158,12 @@ ISR(TWI_vect){
       break;
     case 0xB0:  //arbitration lost, then addressed for read. Not needed since we only operate as slave
       #ifdef DEBUG
-      PORTD=0x0A;
+      PORTD=0x0B;
       #endif
       break;
     case 0xB8:  //data byte transmitted, ACK received, load next byte.
       #ifdef DEBUG
-      PORTD=0x0B;
+      PORTD=0x0C;
       #endif
       ++tx_buffer_ptr;
       if(tx_buffer_ptr<tx_buffer_len && tx_buffer_ptr<TWI_BUFFER_SIZE){
@@ -166,7 +176,7 @@ ISR(TWI_vect){
       break;
     case 0xC0:  //data byte transmitted, NOT ACK received, stop
       #ifdef DEBUG
-      PORTD=0x0C;
+      PORTD=0x0D;
       #endif
       twi_flags&= ~TWI_TX_BUSY;
       twi_flags|= TWI_TX_ABORTED;
@@ -174,7 +184,7 @@ ISR(TWI_vect){
       break;
     case 0xC8:  //last data byte transmitted, ACK received.
       #ifdef DEBUG
-      PORTD=0x0D;
+      PORTD=0x0E;
       #endif
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
