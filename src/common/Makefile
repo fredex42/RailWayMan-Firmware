@@ -3,10 +3,10 @@ CFLAGS = `pkg-config --cflags simavr` -D SIMULATOR -D DEBUG
 
 .PHONY: test
 
-all: twi.o address_finder.o test
+all: common.a test
 
 clean:
-	rm -f *.o *.elf *.hex
+	rm -f *.o *.elf *.hex *.a
 	make clean -C test/
 
 test: twi.o
@@ -17,3 +17,6 @@ twi.o: twi.c twi.h
 
 address_finder.o: address_finder.c address_finder.h
 	avr-gcc -g -Os -mmcu=$(MMCU_TYPE) $(CFLAGS) -c address_finder.c
+
+common.a: twi.o address_finder.o
+	avr-ar rcs common.a twi.o address_finder.o

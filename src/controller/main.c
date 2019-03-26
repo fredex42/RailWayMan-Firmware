@@ -19,7 +19,7 @@ int main(void)
   memset(&state, 0, sizeof(struct controller_state));
 
   //enable TWI
-  setup_twi(my_address);
+  setup_twi(twi_address);
   //enable interrupts
   sei();
 
@@ -50,7 +50,7 @@ int main(void)
           }
           break;
         case REG_OFFER_ACCEPT:  //return our offer state
-          set_tx_buffer(state.offer_reply_state, 1);
+          set_tx_buffer(&state.offer_reply_state, 1);
           break;
         case REG_C_ALL_VALUE:   //stream values of all controller dials
           if(input_mode){
@@ -63,7 +63,7 @@ int main(void)
           set_tx_buffer(&(state.dial_value[0]),2);
           break;
         case REG_C1_FLAGS:
-          if(input){
+          if(input_mode){
             state.controller_flags[0] = peek_rx_buffer(1);
           } else {
             set_tx_buffer((&state.controller_flags), 1);
@@ -73,7 +73,7 @@ int main(void)
           //specific controller value requested
           if(peek_rx_buffer(0)>REG_C_ALL_VALUE && peek_rx_buffer(0)<=REG_C8_VALUE){
             int8_t idx = peek_rx_buffer(0) - REG_C1_VALUE;
-            if(input){
+            if(input_mode){
               state.dial_value[idx] = peek_rx_buffer(1) + peek_rx_buffer(2)<<8;
             } else {
               set_tx_buffer(&(state.dial_value[idx]), 2);
@@ -81,7 +81,7 @@ int main(void)
           } else if(peek_rx_buffer(0)>=REG_C1_FLAGS && peek_rx_buffer(0)<=REG_C8_FLAGS){
             //specific controller flags requested
             int8_t idx = peek_rx_buffer(0) - REG_C1_FLAGS;
-            if(input){
+            if(input_mode){
               state.controller_flags[idx] = peek_rx_buffer(1);
             } else {
               set_tx_buffer(&(state.controller_flags[idx]), 1);

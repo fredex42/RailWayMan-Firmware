@@ -5,5 +5,9 @@ all: common controller
 common:
 	make -C common
 
-# controller:
-# 	make -C controller
+controller: common
+	make -C controller
+
+clean:
+	make clean -C common
+	make clean -C controller
