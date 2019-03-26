@@ -67,6 +67,15 @@ int8_t get_rx_buffer_len()
   return rx_buffer_len;
 }
 
+void clear_rx_buffer()
+{
+  if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
+  if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
+  memset(rx_buffer, 0, TWI_BUFFER_SIZE);
+  rx_buffer_len=0;
+  rx_buffer_ptr=0;
+}
+
 /**
 read a single byte from the receive buffer
 */
