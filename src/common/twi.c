@@ -54,7 +54,7 @@ int get_rx_buffer(char *data, int8_t max_len)
 {
   if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
   if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
-  if(max_len>rx_buffer_len) return -E_RANGE;
+  if(max_len<rx_buffer_len) return -E_RANGE;
 
   memcpy(data, rx_buffer, rx_buffer_len);
   return rx_buffer_len;
@@ -152,6 +152,7 @@ ISR(TWI_vect){
       PORTD=0x09;
       #endif
       twi_flags&=~TWI_RX_BUSY;  //clear the busy flag.
+      twi_flags|=TWI_RX_COMPLETE;
       TWCR = TWCR | (1<<TWINT) | (1<< TWEA); //set the TWEA bit, clear STA and STO to switch to not-addressed-listening
       break;
 
@@ -195,6 +196,8 @@ ISR(TWI_vect){
       #ifdef DEBUG
       PORTD=0x0E;
       #endif
+      twi_flags&= ~TWI_TX_BUSY;
+      twi_flags|=TWI_TX_COMPLETE;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
 

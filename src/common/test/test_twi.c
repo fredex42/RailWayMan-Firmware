@@ -16,7 +16,7 @@ int main(void)
   while(1){
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
-    PORTD|=0x01;
+
     if(twi_flags&TWI_RX_COMPLETE){
       received_bytes = get_rx_buffer(buffer, 8);
       if(received_bytes>0){
@@ -24,10 +24,7 @@ int main(void)
       } else {
         rv=set_tx_buffer(&received_bytes, 1);
       }
-      if(rv<0){
-        PORTD=rv;
-        break;
-      }
+      clear_rx_buffer();
     }
   }
 
