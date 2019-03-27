@@ -9,8 +9,11 @@ clean:
 main.o: main.c main.h registers.h
 	avr-gcc -g -Os -mmcu=$(MMCU_TYPE) $(CFLAGS) -c main.c
 
-controller.elf: main.o
-	avr-gcc -g -mmcu=$(MMCU_TYPE) -o controller.elf main.o ../common/common.a
+timeout.o: timeout.c timeout.h
+	avr-gcc -g -Os -mmcu=$(MMCU_TYPE) $(CFLAGS) -c timeout.c
+
+controller.elf: main.o timeout.o
+	avr-gcc -g -mmcu=$(MMCU_TYPE) -o controller.elf main.o timeout.o ../common/common.a
 
 controller.hex: controller.elf
 	avr-objcopy -j .text -j .data -O ihex controller.elf controller.hex

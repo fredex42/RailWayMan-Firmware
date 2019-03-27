@@ -6,4 +6,4 @@ src:
 	make -C src
 
 clean:
-	make clean src
+	make clean -C src
