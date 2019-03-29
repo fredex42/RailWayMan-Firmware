@@ -6,8 +6,11 @@
 #include "address_finder.h"
 #include "i2c_defs.h"
 #include "registers.h"
+#include "timeout.h"
+#include "adc.h"
 
 struct controller_state state;
+int8_t reading_channel=0;
 
 int main(void)
 {
@@ -20,6 +23,10 @@ int main(void)
 
   //enable TWI
   setup_twi(twi_address);
+  //enable timer
+  setup_timeout();
+  //set up adc
+  adc_setup();
   //enable interrupts
   sei();
 
@@ -27,6 +34,27 @@ int main(void)
     clear_rx_buffer();
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
+    //if we have had a timeout
+    if(timer_flags&TMR_FASTCLK){  //fast clock means start reading of a dial
+      ++reading_channel;
+      if(reading_channel>=CHANNEL_COUNT) reading_channel=0;
+      adc_enable();
+      adc_start_conv(reading_channel);
+      timer_flags&=(~TMR_FASTCLK);
+    }
+    if(timer_flags&TMR_SLOWCLK){  //slow clock means flash any "spare" channels if an offer is present
+
+      timer_flags&=(~TMR_SLOWCLK);
+    }
+
+    //if an ADC conversion is done
+    if(adc_event){  //adc_event means that a reading is available
+      state.dial_value[reading_channel] = adc_get_last_value();
+      adc_disable();  //save power
+      adc_event=0;
+    }
+
+    //if we have received data from the master
     if(twi_flags&TWI_RX_COMPLETE){
       //if we received only one byte then master is expecting a reply,
       //otherwise we expect to receive data
@@ -88,6 +116,7 @@ int main(void)
             }
           }
       }
+      twi_flags&=(~TWI_RX_COMPLETE);
       sei();  //re-enable interrupts
     }
   }

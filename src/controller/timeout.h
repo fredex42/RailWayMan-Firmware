@@ -5,4 +5,4 @@ extern int8_t timer_flags;
 
 #define SLOW_DIVIDER  5
 
-void setup_led_flash_timeout();
+void setup_timeout();
