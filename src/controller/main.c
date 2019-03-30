@@ -66,8 +66,9 @@ int main(void)
           set_tx_buffer(buffer,1);
           break;
         case REG_REVISION:      //transmit revision number
-          buffer[0]=0x1001;     //dummy placeholder
-          set_tx_buffer(buffer,1);
+          buffer[0]=0x01;     //dummy placeholder
+          buffer[1]=0x10;
+          set_tx_buffer(buffer,2);
           break;
         case REG_OFFER_FLAGS:   //receive flag showing if an offer is being made
           state.offer_state = peek_rx_buffer(1);

@@ -67,12 +67,13 @@ int8_t read_id_byte(int fp, int8_t devid)
 
 int16_t read_firmware_revision(int fp, int8_t devid)
 {
-  int16_t buf;
+  int8_t sendbuf;
+  int16_t buf=0;
   ioctl(fp, I2C_SLAVE, devid);
-  buf = 0x01; //we want register 1
-  write(fp, &buf, 1);
+  sendbuf = 0x01; //we want register 1
+  write(fp, &sendbuf, 1);
   usleep(100);
-  read(fp, &buf, 1);
+  read(fp, &buf, 2);
   return buf;
 }
 
@@ -106,9 +107,10 @@ const struct program_opts *get_program_opts(int argc, char *argv[])
         rtn->deviceid=atoi(optarg);
         break;
       default:
-        printf("unrecognised arg\n");
+        printf("unrecognised arg: 0x%x\n", ch);
         break;
     }
+    if(ch==0xff) break;
   }
 
   return (const struct program_opts *)rtn;
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
 
   int8_t id_byte = read_id_byte(fd, opts->deviceid);
   int8_t channel_count = EXTRACT_CHANNEL_COUNT(id_byte);
-  fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte));
+  fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x with firmware revision 0x%x (%d)\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte), read_firmware_revision(fd, opts->deviceid));
 
   if(EXTRACT_DEVID(id_byte)!=DEVID_CONTROLLER){
     fprintf(stderr, "This program only works with a control surface device.\n");
@@ -151,8 +153,8 @@ int main(int argc, char *argv[])
   while(1){
     get_channel_values(fd, opts->deviceid, &raw_channel_values, channel_count);
     for(n=0;n<channel_count;++n)
-      fprintf(stdout, "Channel %d: 0x%x", n, raw_channel_values[n]);
+      fprintf(stdout, "Channel %d: 0x%x\t", n, raw_channel_values[n]);
     fprintf(stdout,"\r");
-    usleep(5000);
+    usleep(50000);
   }
 }

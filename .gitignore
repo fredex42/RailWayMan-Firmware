@@ -1,3 +1,6 @@
 *.o
 *.elf
 *.hex
+*.a
+test-clients/test-controller/test-controller
+test-clients/test1/test1

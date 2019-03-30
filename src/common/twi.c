@@ -84,7 +84,9 @@ char peek_rx_buffer(int8_t idx)
   if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
   if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
   if(idx>rx_buffer_len) return -E_RANGE;
+  return rx_buffer[idx];
 }
+
 //see https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
 //service the TWI (===I2C) interrupt
 ISR(TWI_vect){
