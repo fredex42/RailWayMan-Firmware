@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include "test_controller.h"
 
 extern int errno;
 
@@ -28,21 +29,29 @@ int open_i2c()
   return rv;
 }
 
-const struct option* setup_options()
+static const struct option* setup_options()
 {
-  static const struct option *option_list[] = {
+  static const struct option option_list[] = {
     {
-      "name": "deviceid",
-      "flag": NULL,
-      "val": 1
+      .name="deviceid",
+      .has_arg=required_argument,
+      .flag= NULL,
+      .val='d'
     },
     {
-      "name": "\0",
-      "flag": NULL,
-      "val": 0
+      .name="busnum",
+      .has_arg=required_argument,
+      .flag= NULL,
+      .val='b'
+    },
+    {
+      .name=NULL,
+      .has_arg=0,
+      .flag=NULL,
+      .val=0
     }
   };
-  return option_list;
+  return &option_list;
 }
 
 int8_t read_id_byte(int fp, int8_t devid)
@@ -56,6 +65,17 @@ int8_t read_id_byte(int fp, int8_t devid)
   return buf;
 }
 
+int16_t read_firmware_revision(int fp, int8_t devid)
+{
+  int16_t buf;
+  ioctl(fp, I2C_SLAVE, devid);
+  buf = 0x01; //we want register 1
+  write(fp, &buf, 1);
+  usleep(100);
+  read(fp, &buf, 1);
+  return buf;
+}
+
 void get_channel_values(int fp, int8_t devid, int16_t **raw_channel_values, int8_t channel_count)
 {
   int8_t buf=0x04;
@@ -65,41 +85,44 @@ void get_channel_values(int fp, int8_t devid, int16_t **raw_channel_values, int8
   read(fp, *raw_channel_values, channel_count);
 }
 
-#define EXTRACT_DEVID(id_byte) id_byte&0x0F
-#define EXTRACT_CHANNEL_COUNT(id_byte) (id_byte>>4)&0x0F
-
-//from firmware/src/common/i2c_defs.h
-enum DeviceID {
-  DEVID_INVALID=0,      //NOT a valid device ID (000)
-  DEVID_TRACKSECTION,   //a track section control device (001)
-  DEVID_CONTROLLER,     //a control surface device (010)
-  DEVID_PMOTOR,         //a point/semaphore signal control device (011)
-
-};
-
-static char *device_desc[] = {
-  "Not valid",
-  "Track section driver",
-  "Control surface",
-  "Point motor driver",
-  "\0"
-};
-
 static char *device_desc_for(int8_t id){
   if(id<0 || id>4){
-
+    return "Invalid device ID";
   }
+  return device_desc[id];
+}
+
+const struct program_opts *get_program_opts(int argc, char *argv[])
+{
+  const struct option* opts = setup_options();
+  struct program_opts* rtn = (struct program_opts *)malloc(sizeof(struct program_opts));
+  memset(rtn, 0, sizeof(struct program_opts));
+
+  char ch;
+  while((ch=getopt_long(argc, argv, "db", opts, NULL))!=-1){
+    switch(ch){
+      case 'd':
+        printf("Got string %s for deviceid\n", optarg);
+        rtn->deviceid=atoi(optarg);
+        break;
+      default:
+        printf("unrecognised arg\n");
+        break;
+    }
+  }
+
+  return (const struct program_opts *)rtn;
 }
 int main(int argc, char *argv[])
 {
   int arg_at;
-  const struct option* opts = setup_options();
+
   int16_t *raw_channel_values;
 
-  int8_t deviceid = getopt_long(argc,argv, "deviceid", opts, &arg_at);
+  const struct program_opts* opts = get_program_opts(argc, argv);
 
-  if(deviceid<3 || deviceid>254){
-    fprintf(stderr, "Minimum allowed device ID on the pi is 3, max is 254.\n");
+  if(opts->deviceid<3 || opts->deviceid>254){
+    fprintf(stderr, "Minimum allowed device ID on the pi is 3, max is 254. You specified %d\n",opts->deviceid);
     exit(2);
   }
 
@@ -108,7 +131,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  int8_t id_byte = read_id_byte(fd, deviceid);
+  int8_t id_byte = read_id_byte(fd, opts->deviceid);
   int8_t channel_count = EXTRACT_CHANNEL_COUNT(id_byte);
   fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte));
 
@@ -126,7 +149,7 @@ int main(int argc, char *argv[])
 
   int n;
   while(1){
-    get_channel_values(fd, deviceid, &raw_channel_values, channel_count);
+    get_channel_values(fd, opts->deviceid, &raw_channel_values, channel_count);
     for(n=0;n<channel_count;++n)
       fprintf(stdout, "Channel %d: 0x%x", n, raw_channel_values[n]);
     fprintf(stdout,"\r");

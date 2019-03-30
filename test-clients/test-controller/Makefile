@@ -1,7 +1,7 @@
-all: test_controller
+all: test-controller
 
-test_controller.o: test-controller.c
+test-controller.o: test-controller.c
 	gcc -ggdb -c test-controller.c
 
-test_controller: test_controller.o
-	gcc -o test_controller test_controller.o
+test-controller: test-controller.o
+	gcc -o test-controller test-controller.o
