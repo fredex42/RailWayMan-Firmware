@@ -24,7 +24,7 @@ int main(void)
   //enable TWI
   setup_twi(twi_address);
   //enable ADC
-  //adc_setup();
+  adc_setup();
   //enable timeout
   setup_timeout();
   //enable interrupts
@@ -34,10 +34,11 @@ int main(void)
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
 
-    // if(adc_event){  //a conversion finished
-    //   state.dial_value[current_reading_index] = adc_get_last_value();
-    //   ++current_reading_index;
-    // }
+    if(adc_event){  //a conversion finished
+      state.dial_value[current_reading_index] = adc_get_last_value();
+      ++current_reading_index;
+      if(current_reading_index>CHANNEL_COUNT) current_reading_index=0;
+    }
     if(timer_flags&TMR_SLOWCLK){
       state.dial_value[0]+=1;
       state.dial_value[1]+=1;

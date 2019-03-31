@@ -41,5 +41,6 @@ void setup_timeout()
   TIMSK1 = (1<<OCIE1A) | (1<<OCIE1B); //activate interrupt at output compare match on chl A
   TCCR1A = 0; //normal waveform gen, no pin output
   //TCCR1B = (1<<WGM12) | (1<<CS12) | (1<<CS10); //activate 1024 divider and CTC mode
-  TCCR1B = (1<<WGM12) | (1<<CS10);  //no divider
+  TCCR1B = (1<<WGM12) | (1<<CS10);  //no divider. In actuality TMR_SLOWCLK is ~1/2 sec for this, so FASTCLK is ~1/10s.
+  //implies actual clock is ~1kHz
 }

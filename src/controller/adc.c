@@ -7,7 +7,7 @@
 
 uint8_t flags=ST_NONE;
 uint16_t last_value=0x1;
-int8_t adc_event; //simple flag to detect an ADC event from the main loop
+int8_t adc_event=0; //simple flag to detect an ADC event from the main loop
 
 ISR(ADC_vect){  //handle ADC interrupts
   last_value = 0;
