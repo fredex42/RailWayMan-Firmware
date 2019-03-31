@@ -3,11 +3,14 @@
 #include <string.h>
 #include "main.h"
 #include "twi.h"
+#include "adc.h"
+#include "timeout.h"
 #include "address_finder.h"
 #include "i2c_defs.h"
 #include "registers.h"
 
 struct controller_state state;
+int8_t current_reading_index=0;
 
 int main(void)
 {
@@ -20,12 +23,30 @@ int main(void)
 
   //enable TWI
   setup_twi(twi_address);
+  //enable ADC
+  //adc_setup();
+  //enable timeout
+  setup_timeout();
   //enable interrupts
   sei();
 
   while(1){
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
+
+    // if(adc_event){  //a conversion finished
+    //   state.dial_value[current_reading_index] = adc_get_last_value();
+    //   ++current_reading_index;
+    // }
+    if(timer_flags&TMR_SLOWCLK){
+      state.dial_value[0]+=1;
+      state.dial_value[1]+=1;
+      state.dial_value[2]+=1;
+      state.dial_value[3]+=1;
+
+      timer_flags&=~(TMR_SLOWCLK);
+    }
+
     if(twi_flags&TWI_RX_COMPLETE){
       //if we received only one byte then master is expecting a reply,
       //otherwise we expect to receive data

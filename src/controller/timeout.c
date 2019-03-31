@@ -40,5 +40,6 @@ void setup_timeout()
   OCR1AL = 0;
   TIMSK1 = (1<<OCIE1A) | (1<<OCIE1B); //activate interrupt at output compare match on chl A
   TCCR1A = 0; //normal waveform gen, no pin output
-  TCCR1B = (1<<WGM12) | (1<<CS12) | (1<<CS10); //activate 1024 divider and CTC mode
+  //TCCR1B = (1<<WGM12) | (1<<CS12) | (1<<CS10); //activate 1024 divider and CTC mode
+  TCCR1B = (1<<WGM12) | (1<<CS10);  //no divider
 }

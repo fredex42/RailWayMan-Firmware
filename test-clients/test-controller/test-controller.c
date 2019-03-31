@@ -212,7 +212,7 @@ int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
   while(1){
     get_channel_values(fd, opts->deviceid, &raw_channel_values, channel_count);
     for(n=0;n<channel_count;++n)
-      fprintf(stdout, "Channel %d: 0x%x\t", n, raw_channel_values[n]);
+      fprintf(stdout, "Channel %d: 0x%04x\t", n, raw_channel_values[n]);
     fprintf(stdout,"\r");
     usleep(50000);
   }

@@ -1,5 +1,5 @@
 MMCU_TYPE = atmega48
-CFLAGS = `pkg-config --cflags simavr` -D SIMULATOR -D DEBUG
+CFLAGS = `pkg-config --cflags simavr` -D SIMULATOR -Os
 
 .PHONY: test
 
