@@ -54,36 +54,92 @@ static const struct option* setup_options()
   return &option_list;
 }
 
+void dump_i2c_buffer(char *buf, int maxlen){
+  int c;
+  for(c=0;c<maxlen;++c){
+    fprintf(stderr, "%02x ", buf[c]);
+  }
+  fprintf(stderr, "\n");
+}
+
+char *i2c_read_buffer(int fp, int8_t devid)
+{
+  char *buf=(char *)malloc(32*sizeof(char));
+  memset(buf,0,32);
+  char ch;
+  int n=0,rv=0;
+
+  ioctl(fp, I2C_SLAVE,devid);
+  rv=read(fp,buf,32);
+  //dump_i2c_buffer(buf,32);
+  return buf;
+  // do {
+  //   rv=read(fp,&ch,1);
+  //   if(rv==0xff){
+  //     buf[n]=0;
+  //     dump_i2c_buffer(buf, n);
+  //     return buf;
+  //   } else {
+  //     buf[n]=ch;
+  //   }
+  //   ++n;
+  // } while(n<32 && rv!=-1);
+  // buf[32]=0;
+  // dump_i2c_buffer(buf, 32);
+  // return buf;
+}
+
+//next thing to try - read everything unil 0xff into a buffer, that way we know we got the lot.
 int8_t read_id_byte(int fp, int8_t devid)
 {
-  int8_t buf;
+  char *buf;
+  int8_t rtn;
   ioctl(fp, I2C_SLAVE, devid);
   buf=0x00;
   write(fp, &buf, 1); //we want register 0
+  fprintf(stderr,"Wrote 0x%x\n", buf);
   usleep(100);
-  read(fp, &buf,1 );  //read the contents and return
-  return buf;
+  //read(fp, &buf,2);  //read the contents and return
+  buf=i2c_read_buffer(fp, devid);
+  rtn=buf[0];
+  free(buf);
+  fprintf(stderr, "Read 0x%x\n", rtn);
+  ioctl(fp, I2C_SLAVE, 0);
+  return rtn;
 }
 
 int16_t read_firmware_revision(int fp, int8_t devid)
 {
   int8_t sendbuf;
-  int16_t buf=0;
+  int16_t rtn=0;
+  char *buf;
+
   ioctl(fp, I2C_SLAVE, devid);
   sendbuf = 0x01; //we want register 1
   write(fp, &sendbuf, 1);
+  fprintf(stderr, "Wrote 0x%x\n",sendbuf);
   usleep(100);
-  read(fp, &buf, 2);
-  return buf;
+  //read(fp, &buf, 3);
+  buf=i2c_read_buffer(fp, devid);
+  memcpy(&rtn, buf,2);
+  free(buf);
+
+  fprintf(stderr, "Read 0x%x\n", rtn);
+  ioctl(fp, I2C_SLAVE, 0);
+  return rtn;
 }
 
 void get_channel_values(int fp, int8_t devid, int16_t **raw_channel_values, int8_t channel_count)
 {
-  int8_t buf=0x04;
+  int8_t sendbuf=0x04;
+  char *buf;
   ioctl(fp, I2C_SLAVE, devid);
-  write(fp, &buf, 1); //register 4 is "all controller values"
+  write(fp, &sendbuf, 1); //register 4 is "all controller values"
   usleep(100);
-  read(fp, *raw_channel_values, channel_count);
+  buf = i2c_read_buffer(fp, devid);
+  memcpy(*raw_channel_values, buf, channel_count*sizeof(int16_t));
+  free(buf);
+  //read(fp, *raw_channel_values, channel_count);
 }
 
 static char *device_desc_for(int8_t id){
@@ -115,6 +171,7 @@ const struct program_opts *get_program_opts(int argc, char *argv[])
 
   return (const struct program_opts *)rtn;
 }
+
 int main(int argc, char *argv[])
 {
   int arg_at;
@@ -133,9 +190,11 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
+int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
   int8_t id_byte = read_id_byte(fd, opts->deviceid);
+
   int8_t channel_count = EXTRACT_CHANNEL_COUNT(id_byte);
-  fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x with firmware revision 0x%x (%d)\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte), read_firmware_revision(fd, opts->deviceid));
+  fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x with firmware revision 0x%x (%d)\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte), fwrev, fwrev);
 
   if(EXTRACT_DEVID(id_byte)!=DEVID_CONTROLLER){
     fprintf(stderr, "This program only works with a control surface device.\n");

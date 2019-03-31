@@ -30,6 +30,7 @@ int set_tx_buffer(char* data, int8_t len)
   if(len>TWI_BUFFER_SIZE) return -E_RANGE;
 
   memcpy(tx_buffer, data, len);
+  tx_buffer_ptr=0;
   tx_buffer_len = len;
   twi_flags&= (~TWI_TX_ABORTED)&(~TWI_TX_COMPLETE); //new transfer ready, remove completed twi_flags
   return E_OK;
@@ -79,7 +80,7 @@ void clear_rx_buffer()
 /**
 read a single byte from the receive buffer
 */
-char peek_rx_buffer(int8_t idx)
+char peek_rx_buffer(uint8_t idx)
 {
   if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
   if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
@@ -135,7 +136,15 @@ ISR(TWI_vect){
       #ifdef DEBUG
       PORTD=0x06;
       #endif
-      TWCR = TWCR | (1<<TWINT) | (1<<TWEA);   //switch to not addressed listening
+      if(rx_buffer_ptr<TWI_BUFFER_SIZE){
+        rx_buffer[rx_buffer_ptr] = TWDR;
+        ++rx_buffer_ptr;
+        ++rx_buffer_len;
+        TWCR |= (1<<TWINT) | (1<<TWEA); //set TWEA bit to ACK the incoming byte
+      } else {
+        TWCR |=  (1<<TWINT);
+        TWCR &= ~(1<<TWEA); //clear TWEA bit to NACK the incoming byte, we ran out of space
+      }
       break;
     case 0x90:  //general call address received, data ready, ACKED
       #ifdef DEBUG
@@ -166,7 +175,12 @@ ISR(TWI_vect){
       twi_flags|=TWI_TX_BUSY;
       tx_buffer_ptr=0;
       TWDR = tx_buffer[0];
-      TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
+      if(tx_buffer_len==1){
+        TWCR = TWCR | (1 << TWINT);
+        TWCR &= ~(1<<TWEA); //clear TWEA as there is no more data
+      } else {
+        TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
+      }
       break;
     case 0xB0:  //arbitration lost, then addressed for read. Not needed since we only operate as slave
       #ifdef DEBUG

@@ -18,12 +18,17 @@ int main(void)
     sleep_mode();
 
     if(twi_flags&TWI_RX_COMPLETE){
-      received_bytes = get_rx_buffer(buffer, 8);
-      if(received_bytes>0){
-        rv=set_tx_buffer(buffer, received_bytes);
-      } else {
-        rv=set_tx_buffer(&received_bytes, 1);
-      }
+      memset(buffer,0,8);
+      buffer[0]=peek_rx_buffer(0);
+      buffer[1]=peek_rx_buffer(1);
+      buffer[2]=0;
+      set_tx_buffer(buffer,3);
+      // received_bytes = get_rx_buffer(buffer, 8);
+      // if(received_bytes>0){
+      //   rv=set_tx_buffer(buffer, received_bytes);
+      // } else {
+      //   rv=set_tx_buffer(&received_bytes, 1);
+      // }
       clear_rx_buffer();
     }
   }

@@ -58,5 +58,18 @@ int main(int argc, char *argv[])
   }
   putchar('\n');
 
+  sleep(1);
+
+  //ioctl(fd,I2C_SLAVE,0x04);
+  snprintf(wrbuf,8,"Bye");
+  write(fd, wrbuf, strlen(wrbuf));
+  sleep(1);
+
+  //ioctl(fd,I2C_SLAVE,0x04);
+  read(fd, rdbuf, 8);
+  for(n=0;n<8;++n){
+    printf("0x%02x ", rdbuf[n]);
+  }
+  putchar('\n');
   close(fd);
 }

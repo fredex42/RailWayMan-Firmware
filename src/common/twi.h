@@ -5,7 +5,7 @@ void setup_twi(int8_t myaddress);
 /**
 read a single byte from the receive buffer
 */
-char peek_rx_buffer(int8_t idx);
+char peek_rx_buffer(uint8_t idx);
 /**
 read the receive buffer by copying its data to the provided pointer
 */
