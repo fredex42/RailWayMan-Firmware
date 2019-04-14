@@ -1,5 +1,6 @@
 #include <avr/interrupt.h>  //for sei()
 #include <avr/sleep.h>      //for set_sleep_mode
+#include <util/delay.h>
 #include <string.h>
 #include "main.h"
 #include "twi.h"
@@ -8,7 +9,9 @@
 #include "address_finder.h"
 #include "i2c_defs.h"
 #include "registers.h"
+#include "led_output.h"
 
+#define F_CPU 200000UL	//this seems to give approximately the right output on the hardware with internal clo
 struct controller_state state;
 int8_t current_reading_index=0;
 
@@ -16,6 +19,15 @@ int main(void)
 {
   unsigned char input_mode=0;
   unsigned char buffer[8];
+  setup_ports();
+
+  //show all red
+  set_indicator(0,1,0);
+  set_indicator(1,1,0);
+  set_indicator(2,1,0);
+  set_indicator(3,1,0);
+
+  _delay_ms(500);
   //load TWI address from DIP switches at PORTD
   int8_t twi_address = get_twi_address();
 
@@ -29,6 +41,20 @@ int main(void)
   setup_timeout();
   //enable interrupts
   sei();
+
+  //init completed - show all green
+  _delay_ms(500);
+  set_indicator(0,0,1);
+  set_indicator(1,0,1);
+  set_indicator(2,0,1);
+  set_indicator(3,0,1);
+  
+  //clear indicators and enter normal operation
+  _delay_ms(200);
+  set_indicator(0,0,0);
+  set_indicator(1,0,0);
+  set_indicator(2,0,0);
+  set_indicator(3,0,0);
 
   while(1){
     set_sleep_mode(SLEEP_MODE_IDLE);

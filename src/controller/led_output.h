@@ -25,6 +25,7 @@ enum led_display {
 #define CHANNEL_3_GRN (1<<6)
 #define CHANNEL_3_RED (1<<7)
 
+void setup_ports();
 /**
 sets the LED output state for the given channel
 */
