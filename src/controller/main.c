@@ -19,6 +19,8 @@ int main(void)
 {
   unsigned char input_mode=0;
   unsigned char buffer[8];
+  int16_t temp;
+
   setup_ports();
 
   //show all red
@@ -27,7 +29,7 @@ int main(void)
   set_indicator(2,1,0);
   set_indicator(3,1,0);
 
-  _delay_ms(500);
+  _delay_ms(200);
   //load TWI address from DIP switches at PORTD
   int8_t twi_address = get_twi_address();
 
@@ -43,12 +45,16 @@ int main(void)
   sei();
 
   //init completed - show all green
-  _delay_ms(500);
+  _delay_ms(200);
   set_indicator(0,0,1);
   set_indicator(1,0,1);
   set_indicator(2,0,1);
   set_indicator(3,0,1);
-  
+
+  state.ready_for_adc = 1;
+  adc_enable();
+  adc_start_conv(current_reading_index);  //kick off ADC conversion here
+
   //clear indicators and enter normal operation
   _delay_ms(200);
   set_indicator(0,0,0);
@@ -61,18 +67,29 @@ int main(void)
     sleep_mode();
 
     if(adc_event){  //a conversion finished
-      state.dial_value[current_reading_index] = adc_get_last_value();
-      ++current_reading_index;
-      if(current_reading_index>CHANNEL_COUNT) current_reading_index=0;
-    }
-    if(timer_flags&TMR_SLOWCLK){
-      state.dial_value[0]+=1;
-      state.dial_value[1]+=1;
-      state.dial_value[2]+=1;
-      state.dial_value[3]+=1;
+      //FIXME: handle ERR_BUSY response
+      temp = adc_get_last_value();
+      // if(temp==ERR_BUSY){
+      //   //not sure what to do here
+      // } else {
+        state.dial_value[current_reading_index] = temp;
+        ++current_reading_index;
+        if(current_reading_index>CHANNEL_COUNT-1) current_reading_index=0;
+        adc_start_conv(current_reading_index);
+        //state.ready_for_adc=1;
+//      }
+      //state.dial_value[current_reading_index] = current_reading_index;
 
-      timer_flags&=~(TMR_SLOWCLK);
+      adc_event=0;
     }
+
+    // if(timer_flags&TMR_SLOWCLK){
+    //   if(state.ready_for_adc){
+    //     adc_start_conv(current_reading_index);
+    //     state.ready_for_adc=0;
+    //   }
+    //   timer_flags&=~(TMR_SLOWCLK);
+    // }
 
     if(twi_flags&TWI_RX_COMPLETE){
       //if we received only one byte then master is expecting a reply,

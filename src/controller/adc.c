@@ -10,16 +10,19 @@ uint16_t last_value=0x1;
 int8_t adc_event=0; //simple flag to detect an ADC event from the main loop
 
 ISR(ADC_vect){  //handle ADC interrupts
-  last_value = 0;
-  //must read ADCL first. See datasheet p.271.
-  last_value = ADCL;
-  last_value|=ADCH<<8;
-  flags = flags &~ST_BUSY | ST_READY; //we have a value
+  //if(!flags&ST_READY){  //don't overwrite if we have not read the value yet
+    last_value = 0;
+    //must read ADCL first. See datasheet p.271.
+    last_value = ADCL;
+    last_value|=ADCH<<8;
+    flags = flags &~ST_BUSY | ST_READY; //we have a value
+  //}
   adc_event=1;
 }
 
 void adc_setup(){
   ADMUX = (1 << REFS0);  //set external reference and left-adjusted output. Don't left-adjust.
+  //DIDR0 = 0xFF; //disable digital input buffer for the ADC pins
   adc_enable();
 }
 

@@ -1,4 +1,4 @@
-CC=/opt/tools/arm-bcm2708/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc 
+CC=/opt/tools/bin/armv6-rpi-linux-gnueabihf-gcc 
 
 all: test-controller
 
