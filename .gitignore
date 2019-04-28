@@ -4,3 +4,8 @@
 *.a
 test-clients/test-controller/test-controller
 test-clients/test1/test1
+CMakeFiles
+CMakeCache.txt
+Testing/
+cmake_install.cmake
+CTestTestfile.cmake

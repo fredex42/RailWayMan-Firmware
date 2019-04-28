@@ -62,6 +62,7 @@ void dump_i2c_buffer(char *buf, int maxlen){
   fprintf(stderr, "\n");
 }
 
+//read everything unil 0xff into a buffer, that way we know we got the lot.
 char *i2c_read_buffer(int fp, int8_t devid)
 {
   char *buf=(char *)malloc(32*sizeof(char));
@@ -73,23 +74,8 @@ char *i2c_read_buffer(int fp, int8_t devid)
   rv=read(fp,buf,32);
   //dump_i2c_buffer(buf,32);
   return buf;
-  // do {
-  //   rv=read(fp,&ch,1);
-  //   if(rv==0xff){
-  //     buf[n]=0;
-  //     dump_i2c_buffer(buf, n);
-  //     return buf;
-  //   } else {
-  //     buf[n]=ch;
-  //   }
-  //   ++n;
-  // } while(n<32 && rv!=-1);
-  // buf[32]=0;
-  // dump_i2c_buffer(buf, 32);
-  // return buf;
 }
 
-//next thing to try - read everything unil 0xff into a buffer, that way we know we got the lot.
 int8_t read_id_byte(int fp, int8_t devid)
 {
   char *buf;
