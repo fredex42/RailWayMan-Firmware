@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include "led_output.h"
 #include "main.h"
-
+#include "registers.h"
 
 /**
 configures the relevant output pins as outputs for driving the LEDs
@@ -47,30 +47,48 @@ void set_indicator(uint8_t channel, uint8_t red, uint8_t grn)
       }
       break;
     case 2:
-    if(red){
-      CHANNEL_2_PORT|=CHANNEL_2_RED;
-    } else {
-      CHANNEL_2_PORT&=~CHANNEL_2_RED;
-    }
-    if(grn){
-      CHANNEL_2_PORT|=CHANNEL_2_GRN;
-    } else {
-      CHANNEL_2_PORT&=~CHANNEL_2_GRN;
-    }
+      if(red){
+        CHANNEL_2_PORT|=CHANNEL_2_RED;
+      } else {
+        CHANNEL_2_PORT&=~CHANNEL_2_RED;
+      }
+      if(grn){
+        CHANNEL_2_PORT|=CHANNEL_2_GRN;
+      } else {
+        CHANNEL_2_PORT&=~CHANNEL_2_GRN;
+      }
       break;
     case 3:
-    if(red){
-      CHANNEL_3_PORT|=CHANNEL_3_RED;
-    } else {
-      CHANNEL_3_PORT&=~CHANNEL_3_RED;
-    }
-    if(grn){
-      CHANNEL_3_PORT|=CHANNEL_3_GRN;
-    } else {
-      CHANNEL_3_PORT&=~CHANNEL_3_GRN;
-    }
+      if(red){
+        CHANNEL_3_PORT|=CHANNEL_3_RED;
+      } else {
+        CHANNEL_3_PORT&=~CHANNEL_3_RED;
+      }
+      if(grn){
+        CHANNEL_3_PORT|=CHANNEL_3_GRN;
+      } else {
+        CHANNEL_3_PORT&=~CHANNEL_3_GRN;
+      }
       break;
     default:
       break;
   }
+}
+
+/**
+update channels indicator based on controller flags.
+*/
+void update_indicator_flags(uint8_t channel, uint8_t flags, uint8_t flashvalue)
+{
+  if(flags&CF_ACTIVE) set_indicator(channel, 0, 1); //active => green light
+  if(flags&CF_OVERRIDDEN) set_indicator(channel, 1, 0); //overriden => red light
+}
+
+/**
+update channel's indicator if inactive, to the given flashvalue.
+this is used to flash aspects on and off when an offer is pending.
+*/
+void update_indicator_flashing(uint8_t channel, uint8_t flags, uint8_t flashvalue)
+{
+  if(flags==CF_INACTIVE) set_indicator(channel, flashvalue, 0);
 }

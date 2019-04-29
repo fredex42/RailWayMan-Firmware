@@ -27,6 +27,11 @@ enum led_display {
 
 void setup_ports();
 /**
+initialise by configuring I/O ports
+*/
+void setup_ports();
+
+/**
 sets the LED output state for the given channel
 */
 void set_indicator(uint8_t channel, uint8_t red, uint8_t grn);
