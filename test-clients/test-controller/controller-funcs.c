@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 #include "test_controller.h"
@@ -14,8 +15,8 @@ void decode_controller_value(uint16_t raw_value, uint8_t *sign_flag, uint8_t *ou
   uint16_t signmask = 0x200;  //bit 10 set
   uint16_t valuemask = 0x1FF; //bits 1-9 set
 
-  *sign_flag = (raw_value & signmask) >> 10;
+  *sign_flag = (raw_value & signmask) >> 9;
   int16_t intermediate = raw_value - 512;
 
-  *output_value = (uint8_t) (intermediate & 0xFF);
+  *output_value = (uint8_t) (abs(intermediate>>1) & 0xFF);
 }

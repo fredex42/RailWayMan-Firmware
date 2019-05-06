@@ -6,10 +6,12 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <linux/i2c-dev.h>
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include "controller-funcs.h"
 #include "test_controller.h"
 
 extern int errno;
@@ -158,6 +160,11 @@ const struct program_opts *get_program_opts(int argc, char *argv[])
   return (const struct program_opts *)rtn;
 }
 
+const char* direction_string(int8_t sign_flag)
+{
+  return sign_flag ? "BACKWARDS" : "FORWARDS";
+}
+
 int main(int argc, char *argv[])
 {
   int arg_at;
@@ -176,7 +183,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
+  int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
   int8_t id_byte = read_id_byte(fd, opts->deviceid);
 
   int8_t channel_count = EXTRACT_CHANNEL_COUNT(id_byte);
@@ -197,9 +204,17 @@ int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
   int n;
   while(1){
     get_channel_values(fd, opts->deviceid, &raw_channel_values, channel_count);
-    for(n=0;n<channel_count;++n)
-      fprintf(stdout, "Channel %d: 0x%04x\t", n, raw_channel_values[n]);
+    // for(n=0;n<channel_count;++n)
+    //   fprintf(stdout, "Channel %d: 0x%04x\t", n, raw_channel_values[n]);
     fprintf(stdout,"\r");
+    for(n=0;n<channel_count;++n){
+      uint8_t sign_flag, value;
+      decode_controller_value(raw_channel_values[n], &sign_flag, &value);
+      const char* dir_string = direction_string(sign_flag);
+      fprintf(stdout, "Channel %d: 0x%04x => 0x%02x %s\t", n, raw_channel_values, value, dir_string);
+    }
+    fprintf(stdout,"\r");
+    fflush(stdout);
     usleep(50000);
   }
 }

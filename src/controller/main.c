@@ -37,10 +37,13 @@ int main(void)
 
   //enable TWI
   setup_twi(twi_address);
+
   //enable ADC
   adc_setup();
   //enable timeout
   setup_timeout();
+  //setup I/O
+  setup_ports();
   //enable interrupts
   sei();
 
