@@ -148,6 +148,7 @@ int main(void)
             int8_t idx = peek_rx_buffer(0) - REG_C1_FLAGS;
             if(input_mode){
               state.controller_flags[idx] = peek_rx_buffer(1);
+              set_from_channel_flag(idx, state.controller_flags[idx]);  //update LED state
             } else {
               set_tx_buffer(&(state.controller_flags[idx]), 1);
             }

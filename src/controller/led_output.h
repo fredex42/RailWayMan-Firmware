@@ -30,3 +30,7 @@ void setup_ports();
 sets the LED output state for the given channel
 */
 void set_indicator(uint8_t channel, uint8_t red, uint8_t grn);
+/**
+set appropriate LED state for controller channel flags
+*/
+void set_from_channel_flag(uint8_t channel, int8_t flag);

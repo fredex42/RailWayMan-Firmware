@@ -27,8 +27,3 @@ enum VirtualRegisterController {
   REG_C7_FLAGS,        //8 bits wide, RW. Controller flags (as below) for controller dial 3
   REG_C8_FLAGS,        //8 bits wide, RW. Controller flags (as below) for controller dial 4
 };
-
-/* controller flags definitions */
-#define CF_INACTIVE   0x0;    //controller is not routed to anything
-#define CF_ACTIVE     0x1;    //controller is in control of something
-#define CF_OVERRIDDEN 0x2;    //controller is nominally in control but has been overriden by the system

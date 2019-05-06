@@ -15,6 +15,25 @@ void setup_ports()
 }
 
 /**
+set appropriate LED state for controller channel flags
+*/
+void set_from_channel_flag(uint8_t channel, int8_t flag)
+{
+  switch(flag){
+    case CF_INACTIVE:
+      set_indicator(channel, 0,0);
+      break;
+    case CF_ACTIVE:
+      set_indicator(channel, 0, 1);
+      break;
+    case CF_OVERRIDDEN:
+      set_indicator(channel, 1, 0);
+      break;
+    default: break;
+  }
+}
+
+/**
 sets the led state for the given channel. Channel index is zero-based.
 */
 void set_indicator(uint8_t channel, uint8_t red, uint8_t grn)
