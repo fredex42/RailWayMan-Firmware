@@ -75,6 +75,11 @@ int main(int argc,char *argv)
   if(!sign_flag) error("Sign incorrect for 0x300");
   if(value!=0x80) error("Value incorrect for 0x300");
 
+  decode_controller_value(0x00, &sign_flag, &value);
+  printf("0x00 sign was %d, value was %d\n", sign_flag, value);
+  if(sign_flag) error("Sign incorrect for 0x00");
+  if(value!=0xFF) error("Value incorrect for 0x00");
+  
   puts("Tests passed\n");
   exit(0);
 }

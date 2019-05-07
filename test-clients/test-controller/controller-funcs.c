@@ -17,6 +17,12 @@ void decode_controller_value(uint16_t raw_value, uint8_t *sign_flag, uint8_t *ou
 
   *sign_flag = (raw_value & signmask) >> 9;
   int16_t intermediate = raw_value - 512;
+  //printf("intermediate value is %d (0x%03x)\n", intermediate, intermediate);
+  //printf("abs intermediate value is %d (0x%03x)\n", abs(intermediate>>1), abs(intermediate>>1));
 
-  *output_value = (uint8_t) (abs(intermediate>>1) & 0xFF);
+  if(intermediate==-512){ //we overflow by 1 bit at the bottom, deal with this
+    *output_value = 0xFF; //this would otherwise be 0x100, which then gets truncated to 0x00.
+  } else {
+    *output_value = (uint8_t) (abs(intermediate>>1) & 0xFF);
+  }
 }
