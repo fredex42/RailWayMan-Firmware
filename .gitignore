@@ -9,4 +9,4 @@ CMakeCache.txt
 Testing/
 cmake_install.cmake
 CTestTestfile.cmake
-test-clients/test-controller/Makefile
+test-clients/**/Makefile

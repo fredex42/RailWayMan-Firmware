@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
-#include "controller-funcs.h"
-#include "test_controller.h"
+#include "main.h"
+#include "virtualregisters.h"
 
 extern int errno;
 
@@ -78,6 +78,9 @@ char *i2c_read_buffer(int fp, int8_t devid)
   return buf;
 }
 
+/**
+read the ID byte register from the firmware device
+*/
 int8_t read_id_byte(int fp, int8_t devid)
 {
   char *buf;
@@ -94,6 +97,26 @@ int8_t read_id_byte(int fp, int8_t devid)
   fprintf(stderr, "Read 0x%x\n", rtn);
   ioctl(fp, I2C_SLAVE, 0);
   return rtn;
+}
+
+/**
+write new channel flags to the given channel
+fp - file descriptor for I2C bus
+devid - i2c devide ID to target
+channel - (zero-based) index of the channel to target
+flags - new flags to set
+*/
+void write_channel_flags(int fp, int8_t devid, uint8_t channel, int8_t flags)
+{
+  char buf[4];
+  int8_t rtn;
+  ioctl(fp, I2C_SLAVE, devid);
+  buf[0]=REG_C1_FLAGS + channel;
+  buf[1]=flags;
+  buf[2]=0x00;
+  if(buf[0]>REG_C8_FLAGS) return; //invalid for more than 8 channels
+  write(fp, buf, 2);
+  fprintf(stderr, "Wrote 0x%x 0x%x", buf[0],buf[1]);
 }
 
 int16_t read_firmware_revision(int fp, int8_t devid)
@@ -115,19 +138,6 @@ int16_t read_firmware_revision(int fp, int8_t devid)
   fprintf(stderr, "Read 0x%x\n", rtn);
   ioctl(fp, I2C_SLAVE, 0);
   return rtn;
-}
-
-void get_channel_values(int fp, int8_t devid, int16_t **raw_channel_values, int8_t channel_count)
-{
-  int8_t sendbuf=0x04;
-  char *buf;
-  ioctl(fp, I2C_SLAVE, devid);
-  write(fp, &sendbuf, 1); //register 4 is "all controller values"
-  usleep(100);
-  buf = i2c_read_buffer(fp, devid);
-  memcpy(*raw_channel_values, buf, channel_count*sizeof(int16_t));
-  free(buf);
-  //read(fp, *raw_channel_values, channel_count);
 }
 
 static char *device_desc_for(int8_t id){
@@ -160,17 +170,9 @@ const struct program_opts *get_program_opts(int argc, char *argv[])
   return (const struct program_opts *)rtn;
 }
 
-const char* direction_string(int8_t sign_flag, uint8_t decoded_speed_value)
-{
-  if(is_stop(decoded_speed_value)) return "STOP     ";
-  return sign_flag ? "BACKWARDS" : "FORWARDS ";
-}
-
 int main(int argc, char *argv[])
 {
   int arg_at;
-
-  int16_t *raw_channel_values;
 
   const struct program_opts* opts = get_program_opts(argc, argv);
 
@@ -195,27 +197,26 @@ int main(int argc, char *argv[])
     exit(3);
   }
 
-  raw_channel_values = (int16_t *)malloc((EXTRACT_CHANNEL_COUNT(id_byte)+1)*sizeof(int16_t));
-  if(!raw_channel_values){
-    fprintf(stderr, "Could not alloc memory for channels");
-    exit(4);
-  }
-  memset(raw_channel_values, 0, (channel_count+1)*sizeof(int16_t));
-
-  int n;
+  uint8_t current_flags;
   while(1){
-    get_channel_values(fd, opts->deviceid, &raw_channel_values, channel_count);
-    // for(n=0;n<channel_count;++n)
-    //   fprintf(stdout, "Channel %d: 0x%04x\t", n, raw_channel_values[n]);
-    fprintf(stdout,"\r");
-    for(n=0;n<channel_count;++n){
-      uint8_t sign_flag, value;
-      decode_controller_value(raw_channel_values[n], &sign_flag, &value);
-      const char* dir_string = direction_string(sign_flag, value);
-      fprintf(stdout, "Channel %d: 0x%04x => 0x%02x %s\t", n, raw_channel_values, value, dir_string);
+    switch(current_flags){
+      case CF_INACTIVE:
+        current_flags=CF_ACTIVE;
+        break;
+      case CF_ACTIVE:
+        current_flags=CF_OVERRIDDEN;
+        break;
+      case CF_OVERRIDDEN:
+        current_flags=CF_INACTIVE;
+        break;
+      default:
+        current_flags=CF_INACTIVE;
+        break;
     }
-    fprintf(stdout,"\r");
-    fflush(stdout);
-    usleep(5000);
+    for(int n=0;n<4;++n){
+      write_channel_flags(fd, opts->deviceid, n, current_flags);
+      sleep(1);
+    }
+
   }
 }

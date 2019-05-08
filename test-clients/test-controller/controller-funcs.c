@@ -26,3 +26,12 @@ void decode_controller_value(uint16_t raw_value, uint8_t *sign_flag, uint8_t *ou
     *output_value = (uint8_t) (abs(intermediate>>1) & 0xFF);
   }
 }
+
+/**
+returns true if the decoded value should be interpreted as a STOP
+*/
+uint8_t is_stop(uint8_t decoded_speed_value)
+{
+  if(decoded_speed_value<10) return 1;
+  return 0;
+}

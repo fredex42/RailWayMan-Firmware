@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-enable_testing()
-
 project(test-controller)
 
 link_directories(/opt/rpi-rootfs/usr/lib/arm-linux-gnueabihf /opt/rpi-rootfs/lib/arm-linux-gnueabihf ${LIBXMLPP_LIBRARY_DIR})
