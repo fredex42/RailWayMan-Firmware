@@ -13,23 +13,9 @@
 #include <getopt.h>
 #include "controller-funcs.h"
 #include "test_controller.h"
+#include "../controller-common/i2c.h"
 
 extern int errno;
-
-#define BUS_NUM 1
-
-int open_i2c()
-{
-  char filename[12];
-  int rv;
-
-  snprintf(filename, 12, "/dev/i2c-%d", BUS_NUM);
-  rv=open(filename, O_RDWR);
-  if(rv<1){
-    fprintf(stderr, "Could not open %s: error %d\n", filename,errno);
-  }
-  return rv;
-}
 
 static const struct option* setup_options()
 {
@@ -56,66 +42,6 @@ static const struct option* setup_options()
   return &option_list;
 }
 
-void dump_i2c_buffer(char *buf, int maxlen){
-  int c;
-  for(c=0;c<maxlen;++c){
-    fprintf(stderr, "%02x ", buf[c]);
-  }
-  fprintf(stderr, "\n");
-}
-
-//read everything unil 0xff into a buffer, that way we know we got the lot.
-char *i2c_read_buffer(int fp, int8_t devid)
-{
-  char *buf=(char *)malloc(32*sizeof(char));
-  memset(buf,0,32);
-  char ch;
-  int n=0,rv=0;
-
-  ioctl(fp, I2C_SLAVE,devid);
-  rv=read(fp,buf,32);
-  //dump_i2c_buffer(buf,32);
-  return buf;
-}
-
-int8_t read_id_byte(int fp, int8_t devid)
-{
-  char *buf;
-  int8_t rtn;
-  ioctl(fp, I2C_SLAVE, devid);
-  buf=0x00;
-  write(fp, &buf, 1); //we want register 0
-  fprintf(stderr,"Wrote 0x%x\n", buf);
-  usleep(100);
-  //read(fp, &buf,2);  //read the contents and return
-  buf=i2c_read_buffer(fp, devid);
-  rtn=buf[0];
-  free(buf);
-  fprintf(stderr, "Read 0x%x\n", rtn);
-  ioctl(fp, I2C_SLAVE, 0);
-  return rtn;
-}
-
-int16_t read_firmware_revision(int fp, int8_t devid)
-{
-  int8_t sendbuf;
-  int16_t rtn=0;
-  char *buf;
-
-  ioctl(fp, I2C_SLAVE, devid);
-  sendbuf = 0x01; //we want register 1
-  write(fp, &sendbuf, 1);
-  fprintf(stderr, "Wrote 0x%x\n",sendbuf);
-  usleep(100);
-  //read(fp, &buf, 3);
-  buf=i2c_read_buffer(fp, devid);
-  memcpy(&rtn, buf,2);
-  free(buf);
-
-  fprintf(stderr, "Read 0x%x\n", rtn);
-  ioctl(fp, I2C_SLAVE, 0);
-  return rtn;
-}
 
 void get_channel_values(int fp, int8_t devid, int16_t **raw_channel_values, int8_t channel_count)
 {
