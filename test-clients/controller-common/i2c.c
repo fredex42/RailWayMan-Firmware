@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include "registers.h"
 
 #include "i2c.h"
 
@@ -108,10 +109,14 @@ void write_channel_flags(int fp, int8_t devid, uint8_t channel, int8_t flags)
   buf[2]=0x00;
   if(buf[0]>REG_C8_FLAGS) return; //invalid for more than 8 channels
   write(fp, buf, 2);
-  fprintf(stderr, "Wrote 0x%x 0x%x", buf[0],buf[1]);
+  fprintf(stderr, "Wrote 0x%x 0x%x\n", buf[0],buf[1]);
 }
 
-static char *device_desc_for(int8_t id){
+/**
+returns a static string containing a text description of the device for the given ID
+*/
+static char *device_desc_for(int8_t id)
+{
   if(id<0 || id>4){
     return "Invalid device ID";
   }

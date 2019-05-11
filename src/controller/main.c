@@ -127,16 +127,6 @@ int main(void)
             set_tx_buffer(state.dial_value, CHANNEL_COUNT*sizeof(int16_t));
           }
           break;
-        case REG_C1_VALUE:
-          set_tx_buffer(&(state.dial_value[0]),2);
-          break;
-        case REG_C1_FLAGS:
-          if(input_mode){
-            state.controller_flags[0] = peek_rx_buffer(1);
-          } else {
-            set_tx_buffer((&state.controller_flags), 1);
-          }
-          break;
         default:
           //specific controller value requested
           if(peek_rx_buffer(0)>REG_C_ALL_VALUE && peek_rx_buffer(0)<=REG_C8_VALUE){

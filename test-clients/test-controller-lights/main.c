@@ -13,7 +13,7 @@
 #include <getopt.h>
 #include "main.h"
 #include "virtualregisters.h"
-#include "../controller-common/i2c.c"
+#include "../controller-common/i2c.h"
 
 extern int errno;
 
@@ -44,6 +44,12 @@ static const struct option* setup_options()
   return &option_list;
 }
 
+static char *device_desc_for(int8_t id){
+  if(id<0 || id>4){
+    return "Invalid device ID";
+  }
+  return device_desc[id];
+}
 
 const struct program_opts *get_program_opts(int argc, char *argv[])
 {
