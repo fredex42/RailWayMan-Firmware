@@ -1,0 +1,35 @@
+Common pinout for RailWayMan plugin boards
+
+Outputs marked [] are optional for signal drivers. A->D are common to track section and signal drivers
+1     Logic +V
+2     Logic +V
+3     Logic Gnd
+4     Logic Gnd
+5     i2c clock
+6     i2c clock
+7     i2c data
+8     i2c data
+9     Logic Gnd
+10    Logic Gnd
+11    Out A +
+12    Out A -
+13    [Out F +]
+14    [Out F -]
+15    Out B +
+16    Out B -
+17    [Out G +]
+18    [Out G -]
+19    Out C +
+20    Out C -
+21    [Out H +]
+22    [Out H -]
+23    Out D +
+24    Out D -
+25    [Out I +]
+26    [Out I -]
+27    [Out E +]
+28    [Out E -]
+29    Traction GND
+30    Traction GND
+31    Traction +V
+32    Traction +V
