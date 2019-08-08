@@ -10,14 +10,14 @@
 #include "address_finder.h"
 #include "i2c_defs.h"
 #include "registers.h"
-
+#include "trackcircuit.h"
 struct section_state state;
 
 int main(void)
 {
   unsigned char input_mode=0;
   unsigned char buffer[8];
-  int16_t temp;
+  int8_t temp;
 
   setup_ports();
 
@@ -66,6 +66,18 @@ int main(void)
             set_tx_buffer(&state.set_speed[0],1);
           }
           break;
+        case REG_FLAGS_S1:
+          if(input_mode){
+            get_rx_buffer(&state.section_flags[0],1);
+            if(state.section_flags[0]|SF_REVERSE){
+              set_reversing_bit(0);
+            } else {
+              clear_reversing_bit(0);
+            }
+          } else {
+            set_tx_buffer(&state.section_flags[0],1);
+          }
+          break;
         case REG_POWER_S2:
             if(input_mode){
               get_rx_buffer(&state.set_speed[1],1);
@@ -74,12 +86,36 @@ int main(void)
               set_tx_buffer(&state.set_speed[1],1);
             }
             break;
+        case REG_FLAGS_S2:
+          if(input_mode){
+            get_rx_buffer(&state.section_flags[1],1);
+            if(state.section_flags[1]|SF_REVERSE){
+              set_reversing_bit(1);
+            } else {
+              clear_reversing_bit(1);
+            }
+          } else {
+            set_tx_buffer(&state.section_flags[1],1);
+          }
+          break;
         case REG_POWER_S3:
           if(input_mode){
             get_rx_buffer(&state.set_speed[2],1);
             set_pwm_2a(state.set_speed[2]);
           } else {
             set_tx_buffer(&state.set_speed[2],1);
+          }
+          break;
+        case REG_FLAGS_S3:
+          if(input_mode){
+            get_rx_buffer(&state.section_flags[2],1);
+            if(state.section_flags[2]|SF_REVERSE){
+              set_reversing_bit(2);
+            } else {
+              clear_reversing_bit(2);
+            }
+          } else {
+            set_tx_buffer(&state.section_flags[2],1);
           }
           break;
         case REG_POWER_S4:
@@ -90,6 +126,25 @@ int main(void)
             set_tx_buffer(&state.set_speed[3],1);
           }
           break;
+        case REG_FLAGS_S4:
+          if(input_mode){
+            get_rx_buffer(&state.section_flags[3],1);
+            if(state.section_flags[3]|SF_REVERSE){
+              set_reversing_bit(3);
+            } else {
+              clear_reversing_bit(3);
+            }
+          } else {
+            set_tx_buffer(&state.section_flags[3],1);
+          }
+          break;
+        case REG_OCCUPATION:
+          if(input_mode){
+            //does not support input
+          } else {
+            temp = get_section_occupancy();
+            set_tx_buffer(&temp, 1);
+          }
       }
       clear_rx_buffer();
       sei();  //re-enable interrupts

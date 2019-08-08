@@ -21,6 +21,11 @@ int set_tx_buffer(char* data, int8_t len);
 
 int8_t get_rx_buffer_len();
 
+/*
+clear any outstanding RX buffer content ready for next transfer
+*/
+void clear_rx_buffer();
+
 extern int8_t twi_flags;
 
 #define TWI_BUFFER_SIZE 8
