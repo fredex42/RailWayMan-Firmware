@@ -1,3 +1,5 @@
+#include <sys/types.h>
+
 /* public function prototypes */
 int open_i2c();
 void dump_i2c_buffer(char *buf, int maxlen);
