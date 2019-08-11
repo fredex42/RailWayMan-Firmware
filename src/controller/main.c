@@ -94,6 +94,7 @@ int main(void)
     //   timer_flags&=~(TMR_SLOWCLK);
     // }
 
+    input_mode=0;
     if(twi_flags&TWI_RX_COMPLETE){
       //if we received only one byte then master is expecting a reply,
       //otherwise we expect to receive data

@@ -40,6 +40,7 @@ int main(void)
   sei();
 
   while(1){
+    input_mode=0;
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
 
@@ -60,7 +61,8 @@ int main(void)
           break;
         case REG_POWER_S1:
           if(input_mode){
-            get_rx_buffer(&state.set_speed[0],1);
+            //get_rx_buffer(&state.set_speed[0],1);
+            state.set_speed[0] = peek_rx_buffer(1);
             set_pwm_0a(state.set_speed[0]);
           } else {
             set_tx_buffer(&state.set_speed[0],1);
