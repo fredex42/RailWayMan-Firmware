@@ -12,14 +12,14 @@ void setup_ports()
 
   //configure the outgoing reversing switch ports.
   //reversing switch outs are a bit jumbled. S1 is on PB6, S2 is on PB7. S3 is on PD7 and S4 is on PB0.
-  DDRB |= 1<<7 | 1<<6;
-  DDRD |= 1<<7;
-  DDRB |= 1<<0;
+  DDRB |= 1<<DDB7 | 1<<DDB6;
+  DDRD |= 1<<DDD7;
+  DDRB |= 1<<DDB0;
 
   //clear reversing bits on startup
-  PORTB &= ~(1<<7 | 1<<6);
-  PORTD &= ~(1<<7);
-  PORTB &= ~(1<<0);
+  PORTB &= ~(1<<PORTB7 | 1<<PORTB6);
+  PORTD &= ~(1<<PORTD7);
+  PORTB &= ~(1<<PORTB0);
 
   _NOP(); //one cycle to stabilise
 }
@@ -31,7 +31,7 @@ the occupancy with section 0=>LSB.
 */
 int8_t get_section_occupancy()
 {
-  int8_t rv = PORTC;
+  int8_t rv = PINC;
   rv &= 0x0F;
   return rv;
 }
@@ -40,16 +40,16 @@ void set_reversing_bit(int8_t channel)
 {
   switch(channel){
     case 1:
-      PORTB |= 1<<6;
+      PORTB |= 1<<PORTB6;
       break;
     case 2:
-      PORTB |= 1<<7;
+      PORTB |= 1<<PORTB7;
       break;
     case 3:
-      PORTD |= 1<<7;
+      PORTD |= 1<<PORTD7;
       break;
     case 4:
-      PORTB |= 1<<0;
+      PORTB |= 1<<PORTB0;
       break;
     default:
       break;
@@ -60,16 +60,16 @@ void clear_reversing_bit(int8_t channel)
 {
   switch(channel){
     case 1:
-      PORTB &= ~(1<<6);
+      PORTB &= ~(1<<PORTB6);
       break;
     case 2:
-      PORTB &= ~(1<<7);
+      PORTB &= ~(1<<PORTB7);
       break;
     case 3:
-      PORTD &= ~(1<<7);
+      PORTD &= ~(1<<PORTD7);
       break;
     case 4:
-      PORTB &= ~(1<<0);
+      PORTB &= ~(1<<PORTB0);
       break;
     default:
       break;
