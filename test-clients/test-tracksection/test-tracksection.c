@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
-#include <sys/select.h>
 #include <ncurses.h>
 
 #include "../controller-common/i2c.h"
@@ -93,9 +92,7 @@ const struct program_opts *get_program_opts(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
   int arg_at;
-
   int16_t *raw_channel_values;
-  fd_set watchset;
 
   static struct timeval timeout = {
     .tv_sec=0,
@@ -111,7 +108,7 @@ int main(int argc, char *argv[])
 
   int fd = open_i2c();
   if(fd<=0){
-    //exit(1);
+    exit(1);
   }
 
   int16_t fwrev = read_firmware_revision(fd, opts->deviceid);
@@ -120,34 +117,24 @@ int main(int argc, char *argv[])
   int8_t channel_count = EXTRACT_CHANNEL_COUNT(id_byte);
   fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x with firmware revision 0x%x (%d)\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte), fwrev, fwrev);
 
-  if(EXTRACT_DEVID(id_byte)!=DEVID_CONTROLLER){
+  if(EXTRACT_DEVID(id_byte)!=DEVID_TRACKSECTION){
     fprintf(stderr, "This program only works with a control surface device.\n");
-    //exit(3);
+    exit(3);
   }
 
   int n;
   int16_t current_speed=0;
   int8_t occupancy=0;
-
-  printf("Press + to increase speed or - to decrease. Press 's' or '0' to stop.\n\n");
-
   char ch;
   initscr();
   nodelay(stdscr, TRUE);
 
-  while(1){
-    FD_ZERO(&watchset);
-    FD_SET(0,&watchset);  //0 is stdin
+  printf("Press + to increase speed or - to decrease. Press 's' or '0' to stop.\n\n");
 
+  while(1){
     occupancy = get_section_occupation(fd, opts->deviceid);
 
-    printf("Occupancy byte: 0x%08x. Controlling channel %d: Current speed %d   \r", occupancy, opts->channel, current_speed);
-    //int select_result = select(1,&watchset,NULL,NULL,&timeout);
-    //printf("%d\n",select_result);
-
-    // if(select_result==0){
-    //   //timeout, drop through but re-check section occupation
-    // } else {
+    printf("Occupancy byte: 0x%02x. Controlling channel %d: Current speed %d   \r", occupancy, opts->channel, current_speed);
       ch=getch();
       switch(ch){
         case '+':
@@ -174,7 +161,6 @@ int main(int argc, char *argv[])
         default:
           break;
       }
-    //}
     fflush(stdout);
     usleep(500);
   }

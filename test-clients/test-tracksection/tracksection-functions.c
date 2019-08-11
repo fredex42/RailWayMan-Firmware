@@ -68,6 +68,7 @@ void set_section_speed(int fp, int devid, int8_t channel, int8_t speed)
 
   ioctl(fp, I2C_SLAVE, devid);
   write(fp, buf, 2);
+  ioctl(fp, I2C_SLAVE, 0);
   usleep(100);
 }
 
@@ -99,6 +100,7 @@ void set_section_flags(int fp, int devid, int8_t channel, int8_t flags)
 
   ioctl(fp, I2C_SLAVE, devid);
   write(fp, buf, 2);
+  ioctl(fp, I2C_SLAVE, 0);
   usleep(100);
 }
 
@@ -115,5 +117,6 @@ int8_t get_section_occupation(int fp, int devid)
   char *data = i2c_read_buffer(fp, devid);
   r=data[0];
   free(data);
+  ioctl(fp, I2C_SLAVE, 0);
   return r;
 }

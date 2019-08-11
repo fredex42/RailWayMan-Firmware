@@ -141,6 +141,8 @@ int main(void)
         case REG_OCCUPATION:
           if(input_mode){
             //does not support input
+            temp = get_section_occupancy();
+            set_tx_buffer(&temp, 1);
           } else {
             temp = get_section_occupancy();
             set_tx_buffer(&temp, 1);
