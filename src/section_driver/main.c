@@ -32,10 +32,8 @@ int main(void)
 
   //setup PWM
   setup_pwm_0();
-  setup_pwm_2();
+  //setup_pwm_2();
 
-  //setup I/O
-  setup_ports();
   //enable interrupts
   sei();
 
