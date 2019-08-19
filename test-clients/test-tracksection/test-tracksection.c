@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
   fprintf(stdout, "Got device with ID 0x%x (%s) and channel count 0x%x with firmware revision 0x%x (%d)\n\n", EXTRACT_DEVID(id_byte), device_desc_for(EXTRACT_DEVID(id_byte)), EXTRACT_CHANNEL_COUNT(id_byte), fwrev, fwrev);
 
   if(EXTRACT_DEVID(id_byte)!=DEVID_TRACKSECTION){
-    fprintf(stderr, "This program only works with a control surface device.\n");
-    exit(3);
+    fprintf(stderr, "This program only works with a track section device.\n");
+    //exit(3);
   }
 
   int n;
@@ -140,17 +140,17 @@ int main(int argc, char *argv[])
         case '+':
         case '=': //on some keyboards + is SHIFT-= so treat it same without shift
           current_speed+=3; //roughly 1%
-          set_section(fd,opts->deviceid,opts->channel,current_speed);
+          //set_section(fd,opts->deviceid,opts->channel,current_speed);
           break;
         case '-':
           current_speed-=3;
-          set_section(fd,opts->deviceid,opts->channel,current_speed);
+          //set_section(fd,opts->deviceid,opts->channel,current_speed);
           break;
         case 's':
         case 'S':
         case '0':
           current_speed=0;
-          set_section(fd,opts->deviceid,opts->channel,current_speed);
+          //set_section(fd,opts->deviceid,opts->channel,current_speed);
           break;
         case 'q':
         case 'Q':
