@@ -180,6 +180,7 @@ ISR(TWI_vect){
       } else {
         TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
       }
+      ++tx_buffer_ptr;
       break;
     case 0xB0:  //arbitration lost, then addressed for read. Not needed since we only operate as slave
       #ifdef DEBUG
@@ -190,7 +191,6 @@ ISR(TWI_vect){
       #ifdef DEBUG
       PORTD=0x0C;
       #endif
-      ++tx_buffer_ptr;
       if(tx_buffer_ptr<tx_buffer_len && tx_buffer_ptr<TWI_BUFFER_SIZE){
         TWDR = tx_buffer[tx_buffer_ptr];
         TWCR |= (1<<TWINT) | (1<<TWEA);
@@ -198,6 +198,7 @@ ISR(TWI_vect){
         TWCR |= (1<<TWINT);
         TWCR &= ~(1<<TWEA);
       }
+      ++tx_buffer_ptr;
       break;
     case 0xC0:  //data byte transmitted, NOT ACK received, stop
       #ifdef DEBUG
@@ -205,6 +206,7 @@ ISR(TWI_vect){
       #endif
       twi_flags&= ~TWI_TX_BUSY;
       twi_flags|= TWI_TX_ABORTED;
+      tx_buffer_ptr=0;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
     case 0xC8:  //last data byte transmitted, ACK received.
@@ -213,6 +215,7 @@ ISR(TWI_vect){
       #endif
       twi_flags&= ~TWI_TX_BUSY;
       twi_flags|=TWI_TX_COMPLETE;
+      tx_buffer_ptr=0;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
 
