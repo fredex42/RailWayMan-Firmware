@@ -5,8 +5,7 @@ initialise PWM channel 2
 */
 void setup_pwm_2(){
   //set data direction to OUT for port b pins 1,2 (OCR1A/OCR1B)
-  DDRB = (1<<DDB3);
-  DDRD = (1<<DDD3);
+  DDRB |= (1<<DDB3) | (1<<DDD3);
 
   OCR2A = 0xAA; //channel A half-power
   OCR2B = 0x01; //channel B 99% power
@@ -15,7 +14,7 @@ void setup_pwm_2(){
   TIMSK2 = 0;
 
   //clock select internal (128kHz) with 64 divider
-  TCCR0B = 1<<CS01 | 1<<CS00;
+  TCCR2B = 1<<CS01 | 1<<CS00;
   //set control registers. Non-inverting mode fast PWM on channels A and B
   TCCR2A = 1<<WGM00 | 1<<WGM01 | 0<<COM0A0 | 1<<COM0A1 | 1<<COM0B1 | 0<<COM0B0;
 }
@@ -33,7 +32,7 @@ initialise PWM channel 0
 */
 void setup_pwm_0(){
   //set data direction to OUT for port b pins 1,2 (OCR0A/OCR0B);
-  DDRD = DDRD | (1<<DDD6) | (1<<DDD5);
+  DDRD |= (1<<DDD6) | (1<<DDD5);
 
   OCR0A = 0xAA; //channel A half-power
   OCR0B = 0x01; //channel B 99% power
