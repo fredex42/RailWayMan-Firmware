@@ -209,7 +209,7 @@ ISR(TWI_vect){
       PORTD=0x0D;
       #endif
       twi_flags&= ~TWI_TX_BUSY;
-      twi_flags|= TWI_TX_ABORTED;
+      twi_flags|= TWI_TX_ABORTED|TWI_TX_COMPLETE;
       tx_buffer_ptr=0;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
