@@ -15,7 +15,7 @@ void set_section(int fp, int devid, int8_t channel, int16_t signed_speed)
   int8_t section_flags=0;
 
   convert_signed_speed(signed_speed, &unsigned_speed, &direction_flag);
-  set_section_speed(fp, devid, channel, signed_speed);
+  set_section_speed(fp, devid, channel, unsigned_speed);
 
   section_flags = direction_flag<<SF_REVERSE;
   set_section_flags(fp, devid, channel, section_flags);
