@@ -56,11 +56,14 @@ char *i2c_read_buffer(int fp, int8_t devid)
 int8_t read_id_byte(int fp, int8_t devid)
 {
   char *buf;
+  char tbuf;
   int8_t rtn;
   ioctl(fp, I2C_SLAVE, devid);
-  buf=0x00;
-  write(fp, &buf, 1); //we want register 0
-  fprintf(stderr,"Wrote 0x%x\n", buf);
+
+  tbuf=0x00;
+  write(fp, &tbuf, 1); //we want register 0
+
+  fprintf(stderr,"Wrote 0x%x\n", tbuf);
   usleep(100);
   //read(fp, &buf,2);  //read the contents and return
   buf=i2c_read_buffer(fp, devid);

@@ -27,6 +27,7 @@ returns:
 int set_tx_buffer(char* data, int8_t len)
 {
   if(twi_flags&TWI_TX_BUSY) return -E_BUSY;
+
   if(len>TWI_BUFFER_SIZE) return -E_RANGE;
 
   memcpy(tx_buffer, data, len);
@@ -68,7 +69,7 @@ int8_t get_rx_buffer_len()
   return rx_buffer_len;
 }
 
-void clear_rx_buffer()
+int clear_rx_buffer()
 {
   if(twi_flags&TWI_RX_BUSY) return -E_BUSY;
   if(!twi_flags&TWI_RX_COMPLETE) return -E_NOTREADY;
@@ -140,11 +141,10 @@ ISR(TWI_vect){
         rx_buffer[rx_buffer_ptr] = TWDR;
         ++rx_buffer_ptr;
         ++rx_buffer_len;
-        TWCR |= (1<<TWINT) | (1<<TWEA); //set TWEA bit to ACK the incoming byte
-      } else {
-        TWCR |=  (1<<TWINT);
-        TWCR &= ~(1<<TWEA); //clear TWEA bit to NACK the incoming byte, we ran out of space
       }
+      twi_flags&=~TWI_RX_BUSY;
+      twi_flags|=TWI_RX_COMPLETE;
+      TWCR |= (1<<TWINT) | (1<<TWEA); //set TWEA bit, switch to listening mode
       break;
     case 0x90:  //general call address received, data ready, ACKED
       #ifdef DEBUG
@@ -164,6 +164,8 @@ ISR(TWI_vect){
       #endif
       twi_flags&=~TWI_RX_BUSY;  //clear the busy flag.
       twi_flags|=TWI_RX_COMPLETE;
+      twi_flags&=~TWI_TX_BUSY;
+      twi_flags|=TWI_TX_COMPLETE;
       TWCR = TWCR | (1<<TWINT) | (1<< TWEA); //set the TWEA bit, clear STA and STO to switch to not-addressed-listening
       break;
 
@@ -177,10 +179,11 @@ ISR(TWI_vect){
       TWDR = tx_buffer[0];
       if(tx_buffer_len==1){
         TWCR = TWCR | (1 << TWINT);
-        TWCR &= ~(1<<TWEA); //clear TWEA as there is no more data
+        TWCR &= ~(1<<TWEA); //clear TWEA to send NACK as there is no more data
       } else {
         TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
       }
+      ++tx_buffer_ptr;
       break;
     case 0xB0:  //arbitration lost, then addressed for read. Not needed since we only operate as slave
       #ifdef DEBUG
@@ -191,21 +194,24 @@ ISR(TWI_vect){
       #ifdef DEBUG
       PORTD=0x0C;
       #endif
-      ++tx_buffer_ptr;
       if(tx_buffer_ptr<tx_buffer_len && tx_buffer_ptr<TWI_BUFFER_SIZE){
         TWDR = tx_buffer[tx_buffer_ptr];
         TWCR |= (1<<TWINT) | (1<<TWEA);
       } else {
+        //Send NACK by clearing TWEA when we are on the last byte
+        TWDR = tx_buffer[tx_buffer_ptr];
         TWCR |= (1<<TWINT);
         TWCR &= ~(1<<TWEA);
       }
+      ++tx_buffer_ptr;
       break;
     case 0xC0:  //data byte transmitted, NOT ACK received, stop
       #ifdef DEBUG
       PORTD=0x0D;
       #endif
       twi_flags&= ~TWI_TX_BUSY;
-      twi_flags|= TWI_TX_ABORTED;
+      twi_flags|= TWI_TX_ABORTED|TWI_TX_COMPLETE;
+      tx_buffer_ptr=0;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
     case 0xC8:  //last data byte transmitted, ACK received.
@@ -214,6 +220,7 @@ ISR(TWI_vect){
       #endif
       twi_flags&= ~TWI_TX_BUSY;
       twi_flags|=TWI_TX_COMPLETE;
+      tx_buffer_ptr=0;
       TWCR = TWCR | (1 << TWINT) | (1 << TWEA);  //switch to not addressed slave mode, will recognise own address
       break;
 

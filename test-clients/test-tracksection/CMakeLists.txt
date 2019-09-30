@@ -9,6 +9,6 @@ target_link_libraries(test-tracksection "-Wl,-rpath-link,/opt/rpi-rootfs/lib/arm
 target_include_directories(test-tracksection PUBLIC ${CROSS_SYSTEM_INCLUDES})
 
 INSTALL(TARGETS test-tracksection DESTINATION /usr/share/railwayman/tests/bin)
-#
-#add_executable(test-controller-funcs test-controller-funcs.c controller-funcs.c)
-#add_test(test-controller-funcs test-controller-funcs)
+
+add_executable(test-convert-signed-speed test-convert-signed-speed.c tracksection-functions.c ../controller-common/i2c.c)
+add_test(test-convert-signed-speed test-convert-signed-speed)

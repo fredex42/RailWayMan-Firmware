@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #include "controller-funcs.h"
+
 void error(char* desc)
 {
   puts(desc);
@@ -79,7 +80,7 @@ int main(int argc,char *argv)
   printf("0x00 sign was %d, value was %d\n", sign_flag, value);
   if(sign_flag) error("Sign incorrect for 0x00");
   if(value!=0xFF) error("Value incorrect for 0x00");
-  
+
   puts("Tests passed\n");
   exit(0);
 }

@@ -12,23 +12,15 @@ int main(void)
   setup_twi(0x04);
   sei();
 
-  set_tx_buffer(initial_buffer, 6);
+  set_tx_buffer(initial_buffer, 7);
   while(1){
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_mode();
 
     if(twi_flags&TWI_RX_COMPLETE){
-      memset(buffer,0,8);
-      buffer[0]=peek_rx_buffer(0);
-      buffer[1]=peek_rx_buffer(1);
-      buffer[2]=0;
-      set_tx_buffer(buffer,3);
-      // received_bytes = get_rx_buffer(buffer, 8);
-      // if(received_bytes>0){
-      //   rv=set_tx_buffer(buffer, received_bytes);
-      // } else {
-      //   rv=set_tx_buffer(&received_bytes, 1);
-      // }
+      get_rx_buffer(buffer,8);
+
+      set_tx_buffer(buffer,get_rx_buffer_len());
       clear_rx_buffer();
     }
   }

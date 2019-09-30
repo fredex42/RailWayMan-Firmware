@@ -5,6 +5,6 @@ struct program_opts {
 };
 
 /* section flags values */
-#define SF_OCCUPIED 1>>0
-#define SF_BLOCKED  1>>1
-#define SF_REVERSE  1>>2
+#define SF_OCCUPIED 0
+#define SF_BLOCKED  1
+#define SF_REVERSE  2

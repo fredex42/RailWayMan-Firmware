@@ -11,15 +11,17 @@
 
 void set_section(int fp, int devid, int8_t channel, int16_t signed_speed)
 {
-  uint8_t unsigned_speed, direction_flag;
+  uint8_t unsigned_speed, direction_flag=0;
   int8_t section_flags=0;
 
   convert_signed_speed(signed_speed, &unsigned_speed, &direction_flag);
-  set_section_speed(fp, devid, channel, signed_speed);
+  set_section_speed(fp, devid, channel, unsigned_speed);
 
   section_flags = direction_flag<<SF_REVERSE;
   set_section_flags(fp, devid, channel, section_flags);
+  ioctl(fp, I2C_SLAVE, 0);
 }
+
 /**
 converts a signed 16-bit integer into an unsigned 8-bit integer and a direction flag.
 if value is >255 or <-255 it is truncated.
@@ -119,4 +121,5 @@ int8_t get_section_occupation(int fp, int devid)
   free(data);
   ioctl(fp, I2C_SLAVE, 0);
   return r;
+  ioctl(fp, I2C_SLAVE, 0);
 }
