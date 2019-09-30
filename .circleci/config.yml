@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  firmware:
+    docker:
+      - image: andyg42/avr-build:1
+    steps:
+      - checkout
+      - run:
+          name: Set revision
+          command: cd src/common; echo "#define REVISION (uint16_t) ${CIRCLE_BUILD_NUM}" > revision.h
+      - run: cd src && make clean && make
+      - run: bash ./circleci/upload_tarball.sh
+  # test_utils:
+  #   docker:
+  #     - image: andyg42/rpi-build:10
+  #   environment:
+  #     PKG_CONFIG_PATH: /opt/rpi-rootfs/usr/lib/arm-linux-gnueabihf/pkgconfig:/opt/rpi-rootfs/usr/lib/pkgconfig:/opt/rpi-rootfs/usr/share/pkgconfig
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Configure build
+  #         command: cmake -DCMAKE_TOOLCHAIN_FILE=cmake/rpi-armv6-gnueabihf.cmake -DCPACK_DEBIAN_PACKAGE_RELEASE=${CIRCLE_BUILD_NUM}
+  #     - run:
+  #         name: Compile
+  #         command: make clean && make -j3
+  #     # - run:
+  #     #     name: Run tests
+  #     #     command: make test
+  #     - run:
+  #         name: Package
+  #         command: make package
+  #     - run:
+  #         name: Upload
+  #         command: bash .circleci/upload_debs.sh
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+  #    - test_utils

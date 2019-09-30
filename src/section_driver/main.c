@@ -11,6 +11,8 @@
 #include "i2c_defs.h"
 #include "registers.h"
 #include "trackcircuit.h"
+#include "revision.h"
+
 struct section_state state;
 
 int main(void)
@@ -18,6 +20,7 @@ int main(void)
   unsigned char input_mode=0;
   unsigned char buffer[8];
   int8_t temp;
+  int16_t temp16;
 
   setup_ports();
 
@@ -53,8 +56,8 @@ int main(void)
           set_tx_buffer(buffer,1);
           break;
         case REG_REVISION:      //transmit revision number
-          buffer[0]=0x10;
-          buffer[1]=0x01;     //dummy placeholder
+        temp16 = REVISION;
+          memcpy(buffer, &temp16, 2);
           set_tx_buffer(buffer,2);
           break;
         case REG_POWER_S1:

@@ -1,5 +1,5 @@
 MMCU_TYPE = atmega48
-CFLAGS = `pkg-config --cflags simavr` -D SIMULATOR -Os -I../common
+CFLAGS = -Os -I../common
 
 all: controller.hex
 

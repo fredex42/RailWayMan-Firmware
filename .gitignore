@@ -10,3 +10,4 @@ Testing/
 cmake_install.cmake
 CTestTestfile.cmake
 test-clients/**/Makefile
+*.tar*
