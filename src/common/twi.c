@@ -177,9 +177,9 @@ ISR(TWI_vect){
       twi_flags|=TWI_TX_BUSY;
       tx_buffer_ptr=0;
       TWDR = tx_buffer[0];
-      if(tx_buffer_len==1){ //FIXME: NACK if there is only 1 byte left.
+      if(tx_buffer_len==1){
         TWCR = TWCR | (1 << TWINT);
-        TWCR &= ~(1<<TWEA); //clear TWEA as there is no more data
+        TWCR &= ~(1<<TWEA); //clear TWEA to send NACK as there is no more data
       } else {
         TWCR = TWCR | (1 << TWINT) | (1 << TWEA);
       }
@@ -198,6 +198,7 @@ ISR(TWI_vect){
         TWDR = tx_buffer[tx_buffer_ptr];
         TWCR |= (1<<TWINT) | (1<<TWEA);
       } else {
+        //Send NACK by clearing TWEA when we are on the last byte
         TWDR = tx_buffer[tx_buffer_ptr];
         TWCR |= (1<<TWINT);
         TWCR &= ~(1<<TWEA);
