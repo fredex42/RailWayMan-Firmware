@@ -33,6 +33,7 @@ int main(void)
   //setup PWM
   setup_pwm_0();
   //setup_pwm_2();
+  setup_pwm_1();
 
   //enable interrupts
   sei();
@@ -100,7 +101,7 @@ int main(void)
         case REG_POWER_S3:
           if(input_mode){
             state.set_speed[2] = peek_rx_buffer(1);
-            set_pwm_2a(state.set_speed[2]);
+            set_pwm_1a(state.set_speed[2]);
           } else {
             set_tx_buffer(&state.set_speed[2],1);
           }
@@ -120,7 +121,7 @@ int main(void)
         case REG_POWER_S4:
           if(input_mode){
             state.set_speed[3] = peek_rx_buffer(1);
-            set_pwm_2b(state.set_speed[3]);
+            set_pwm_1b(state.set_speed[3]);
           } else {
             set_tx_buffer(&state.set_speed[3],1);
           }
