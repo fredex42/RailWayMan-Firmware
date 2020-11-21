@@ -68,7 +68,7 @@ int main(void)
         case REG_FLAGS_S1:
           if(input_mode){
             state.section_flags[0] = peek_rx_buffer(1);
-            if(state.section_flags[0]|SF_REVERSE){
+            if(state.section_flags[0]&SF_REVERSE){
               set_reversing_bit(0);
             } else {
               clear_reversing_bit(0);
@@ -88,7 +88,7 @@ int main(void)
         case REG_FLAGS_S2:
           if(input_mode){
             state.section_flags[1] = peek_rx_buffer(1);
-            if(state.section_flags[1]|SF_REVERSE){
+            if(state.section_flags[1]&SF_REVERSE){
               set_reversing_bit(1);
             } else {
               clear_reversing_bit(1);
@@ -108,7 +108,7 @@ int main(void)
         case REG_FLAGS_S3:
           if(input_mode){
             state.section_flags[2] = peek_rx_buffer(1);
-            if(state.section_flags[2]|SF_REVERSE){
+            if(state.section_flags[2]&SF_REVERSE){
               set_reversing_bit(2);
             } else {
               clear_reversing_bit(2);
@@ -128,7 +128,7 @@ int main(void)
         case REG_FLAGS_S4:
           if(input_mode){
             state.section_flags[3] = peek_rx_buffer(1);
-            if(state.section_flags[3]|SF_REVERSE){
+            if(state.section_flags[3]&SF_REVERSE){
               set_reversing_bit(3);
             } else {
               clear_reversing_bit(3);

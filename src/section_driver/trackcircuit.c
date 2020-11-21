@@ -39,16 +39,16 @@ int8_t get_section_occupancy()
 void set_reversing_bit(int8_t channel)
 {
   switch(channel){
-    case 1:
+    case 0:
       PORTB |= 1<<PORTB6;
       break;
-    case 2:
+    case 1:
       PORTB |= 1<<PORTB7;
       break;
-    case 3:
+    case 2:
       PORTD |= 1<<PORTD7;
       break;
-    case 4:
+    case 3:
       PORTB |= 1<<PORTB0;
       break;
     default:
@@ -59,16 +59,16 @@ void set_reversing_bit(int8_t channel)
 void clear_reversing_bit(int8_t channel)
 {
   switch(channel){
-    case 1:
+    case 0:
       PORTB &= ~(1<<PORTB6);
       break;
-    case 2:
+    case 1:
       PORTB &= ~(1<<PORTB7);
       break;
-    case 3:
+    case 2:
       PORTD &= ~(1<<PORTD7);
       break;
-    case 4:
+    case 3:
       PORTB &= ~(1<<PORTB0);
       break;
     default:
