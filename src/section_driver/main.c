@@ -13,12 +13,36 @@
 #include "trackcircuit.h"
 struct section_state state;
 
+void setup_start_indicator()
+{
+  //startup indicator LED is on PB0 & PB1
+  DDRB |= 0x03; //set data direction to OUT
+  PORTB &= ~0x03; //clear the outputs
+}
+
+void show_start_phase1()
+{
+  PORTB |= 0x01;  //set PB0
+}
+
+void show_start_phase2()
+{
+  PORTB |= 0x02;  //set PB1
+}
+
+void clear_start_indicator()
+{
+  PORTB &= ~0x03; //clear PB0 & PB1
+}
+
 int main(void)
 {
   unsigned char input_mode=0;
   unsigned char buffer[8];
   int8_t temp;
 
+  setup_start_indicator();
+  show_start_phase1();
   setup_ports();
 
   _delay_ms(200);
@@ -38,8 +62,10 @@ int main(void)
   sei();
 
   while(1){
+    show_start_phase2();
     input_mode=0;
     set_sleep_mode(SLEEP_MODE_IDLE);
+    clear_start_indicator();
     sleep_mode();
 
     if(twi_flags&TWI_RX_COMPLETE){
