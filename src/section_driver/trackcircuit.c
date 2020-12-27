@@ -19,7 +19,7 @@ void setup_ports()
   //clear reversing bits on startup
   PORTB &= ~(1<<PORTB7 | 1<<PORTB6);
   PORTD &= ~(1<<PORTD7);
-  PORTB &= ~(1<<PORTB0);
+  //PORTB &= ~(1<<PORTB0);
 
   _NOP(); //one cycle to stabilise
 }

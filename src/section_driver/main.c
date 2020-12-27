@@ -27,7 +27,7 @@ void show_start_phase1()
 
 void show_start_phase2()
 {
-  PORTB |= 0x02;  //set PB1
+  PORTB |= PORTB2;  //set PB1
 }
 
 void clear_start_indicator()
@@ -65,8 +65,8 @@ int main(void)
     show_start_phase2();
     input_mode=0;
     set_sleep_mode(SLEEP_MODE_IDLE);
-    clear_start_indicator();
     sleep_mode();
+    clear_start_indicator();
 
     if(twi_flags&TWI_RX_COMPLETE){
       //if we received only one byte then master is expecting a reply,

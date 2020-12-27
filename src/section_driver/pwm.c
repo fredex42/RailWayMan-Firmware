@@ -4,8 +4,9 @@
 initialise PWM channel 2
 */
 void setup_pwm_2(){
-  //set data direction to OUT for port b pins 1,2 (OCR1A/OCR1B)
-  DDRB |= (1<<DDB3) | (1<<DDD3);
+  //set data direction to OUT for OCR2A/OCR2B
+  DDRB |= (1<<DDB3);
+  DDRD |= (1<<DDD3);
 
   OCR2A = 0xAA; //channel A half-power
   OCR2B = 0x01; //channel B 99% power
